@@ -1,0 +1,5 @@
+[
+  {"Product":"Laptop","Region": "North","Q1_Sales": 18000,"Q2_Sales":15000,"Price": 55000},
+  {"Product":"Mobile","Region": "South","Q1_Sales":30000,"Q2_Sales":32000,"Price": 26000},
+  {"Product":"Monitor","Region": "West","Q1_Sales":25000,"Q2_Sales":27000,"Price": 40000}
+]
