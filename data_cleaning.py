@@ -1,24 +1,22 @@
 import pandas as pd
-
-# Load the csv file
-df = pd.read_csv('sample_data.csv')
-#Display the dataframe
+import numpy as np
+df=pd.read_csv("sample_data.csv")
+print("Before Transformation")
 print(df)
 
-# check for missing values in each column
-print(df.isnull().sum())
+# ensure there are no leading/trailing spaces in column names
+df.columns=df.columns.str.strip()
 
-# Display rows with missing data
-print(df[df.isnull().any(axis=1)])
+# Strip spaces from the 'City' column and replace empty strings with NaN
+df['City']=df['City'].str.strip().replace("",np.nan)
+# Fill the missing values of City with unknown
+df['City']=df['City'].fillna('Unknown')
+# Fill missing values in the "Age" column with the median age
+df['Age']=pd.to_numeric(df["Age"].str.strip(), errors='coerce')
+df['Age']=df['Age'].fillna(df['Age'].median())
 
-# Replace empty strings and strings with only spaces with NaN
-df.replace(r'^\s*$',np.nan, regex=True,inplace=True)
+# Fill missing values in the salary column with median salary
+df['Salary']=df['Salary'].fillna(df['Salary'].median())
 
-# display eith rows with missing data
-print(df[df.isnull().any(axis=1)])
-
-# Drop rows with any missing values
-df_cleaned = df.dropna()
-
-# Display the cleaned dataframe
-print(df_cleaned)
+# Display Dataframe after missing values
+print(df)
