@@ -1,0 +1,113 @@
+Mini Project: Data Governance Using Unity Catalog -
+
+Task 1: Set Up Unity Catalog Objects with Multiple Schemas
+
+1. Create a Catalog:
+
+CREATE CATALOG finance_data_catalog;
+
+2. Create Multiple Schemas:
+
+CREATE SCHEMA finance_data_catalog.transaction_data; CREATE SCHEMA
+finance_data_catalog.customer_data;
+
+3. Create Tables in Each Schema:
+
+CREATE TABLE finance_data_catalog.transaction_data.transactions (
+TransactionID INT,
+CustomerID INT,
+TransactionAmount DECIMAL(10, 2), TransactionDate DATE
+);
+
+CREATE TABLE finance_data_catalog.customer_data.customers ( CustomerID INT,
+CustomerName STRING, Email STRING,
+Country STRING
+);
+
+Task 2: Data Discovery Across Schemas
+
+1. Explore Metadata:
+
+SHOW TABLES IN finance_data_catalog.transaction_data; SHOW TABLES IN
+finance_data_catalog.customer_data;
+
+2. Data Profiling:
+
+## Analyze transaction trends
+
+SELECT AVG(TransactionAmount), MIN(TransactionAmount) FROM
+finance_data_catalog.transaction_data.transactions;
+
+## Analyze customer locations
+
+SELECT Country, COUNT(*) AS TotalCustomers FROM
+finance_data_catalog.customer_data.customers GROUP BY Country;
+
+3. Tagging Sensitive Data:
+
+ALTER TABLE finance_data_catalog.transaction_data.transactions SET TAG
+'Sensitive' ON COLUMN TransactionAmount;
+ALTER TABLE finance_data_catalog.customer_data.customers SET TAG 'Sensitive'
+ON COLUMN Email;
+
+Task 3: Implement Data Lineage and Auditing
+
+1. Track Data Lineage:
+
+CREATE TABLE finance_data_catalog.merged_data AS
+SELECT t.TransactionID, t.CustomerID, t.TransactionAmount, t.TransactionDate,
+c.CustomerName, c.Email, c.Country
+FROM finance_data_catalog.transaction_data.transactions t JOIN
+finance_data_catalog.customer_data.customers c
+ON t.CustomerID = c.CustomerID;
+
+2. Audit User Actions:
+
+Turn on audit logs to keep track of table actions and who has accessed and changed
+the data.
+
+Task 4: Access Control and Permissions
+
+1. Set Up Roles and Groups:
+
+GRANT ALL PRIVILEGES ON SCHEMA finance_data_catalog.transaction_data TO
+DataEngineers;
+GRANT SELECT ON SCHEMA finance_data_catalog.customer_data TO
+DataAnalysts; GRANT SELECT ON TABLE
+finance_data_catalog.transaction_data.transactions TO DataAnalysts;
+
+2. Row-Level Security:
+
+CREATE VIEW finance_data_catalog.transaction_data.high_value_transactions AS
+SELECT * FROM finance_data_catalog.transaction_data.transactions
+WHERE TransactionAmount > 10000;
+
+GRANT SELECT ON VIEW
+finance_data_catalog.transaction_data.high_value_transactions TO specific_user;
+
+Task 5: Data Governance Best Practices:
+
+1. Create Data Quality Rules:
+
+## Check for negative transaction amounts
+
+SELECT * FROM finance_data_catalog.transaction_data.transactions WHERE
+TransactionAmount < 0;
+
+## Validate email format
+
+SELECT * FROM finance_data_catalog.customer_data.customers WHERE Email
+NOT L
+LIKE '%@%.%';
+
+Task 6: Data Lifecycle Management
+
+1. Implement Time Travel:
+
+SELECT * FROM finance_data_catalog.transaction_data.transactions VERSION AS
+OF TIMESTAMP '2024-09-15';
+
+2. Run a Vacuum Operation:
+
+VACUUM finance_data_catalog.transaction_data.transactions;
+
