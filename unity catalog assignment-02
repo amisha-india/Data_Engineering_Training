@@ -1,0 +1,126 @@
+Mini Project: Advanced Data Governance and Security Using Unity Catalog -
+
+Task 1: Set Up Multi-Tenant Data Architecture Using Unity Catalog
+
+1. Create a New Catalog:
+CREATE CATALOG corporate_data_catalog;
+
+2. Create Schemas for Each Department:
+CREATE SCHEMA corporate_data_catalog.sales_data; CREATE SCHEMA
+corporate_data_catalog.hr_data; CREATE SCHEMA
+corporate_data_catalog.finance_data;
+
+3. Create Tables in Each Schema:
+CREATE TABLE corporate_data_catalog.sales_data.sales ( SalesID INT,
+CustomerID INT,
+SalesAmount DECIMAL(10, 2), SalesDate DATE
+);
+
+CREATE TABLE corporate_data_catalog.hr_data.employees ( EmployeeID INT,
+EmployeeName STRING, Department STRING, Salary DECIMAL(10, 2)
+);
+
+CREATE TABLE corporate_data_catalog.finance_data.invoices ( InvoiceID INT,
+VendorID INT,
+InvoiceAmount DECIMAL(10, 2), PaymentDate DATE
+);
+
+Task 2: Enable Data Discovery for Cross-Departmental Data
+
+1. Search for Tables Across Departments:
+
+SHOW TABLES IN corporate_data_catalog.sales_data; SHOW TABLES IN
+corporate_data_catalog.hr_data; SHOW TABLES IN
+corporate_data_catalog.finance_data;
+
+2. Tag Sensitive Information:
+ALTER TABLE corporate_data_catalog.hr_data.employees SET TAG 'Sensitive' ON
+COLUMN Salary;
+ALTER TABLE corporate_data_catalog.finance_data.invoices SET TAG 'Sensitive'
+ON COLUMN InvoiceAmount;
+
+3. Data Profiling:
+## sales trends
+SELECT AVG(SalesAmount), MIN(SalesAmount), MAX(SalesAmount) FROM
+corporate_data_catalog.sales_data.sales;
+
+## employee salary distribution
+SELECT AVG(Salary), MAX(Salary)
+FROM corporate_data_catalog.hr_data.employees;
+
+## financial transactions
+SELECT AVG(InvoiceAmount), MIN(InvoiceAmount), MAX(InvoiceAmount) FROM
+corporate_data_catalog.finance_data.invoices;
+
+Task 3: Implement Data Lineage and Data Auditing
+
+1. Track Data Lineage:
+CREATE TABLE corporate_data_catalog.reports.sales_finance_report AS
+SELECT s.SalesID, s.CustomerID, s.SalesAmount, s.SalesDate, f.InvoiceID,
+f.InvoiceAmount, f.PaymentDate
+FROM corporate_data_catalog.sales_data.sales s JOIN
+corporate_data_catalog.finance_data.invoices f ON s.CustomerID = f.VendorID;
+
+2. Enable Data Audit Logs:
+Turn on the audit log
+
+Task 4: Data Access Control and Security:
+
+1. Set Up Roles and Permissions:
+CREATE GROUP SalesTeam; CREATE GROUP FinanceTeam; CREATE GROUP
+HRTeam;
+
+## Grant access to SalesTeam
+GRANT SELECT ON SCHEMA corporate_data_catalog.sales_data TO SalesTeam;
+##Grant access to FinanceTeam
+GRANT SELECT ON SCHEMA corporate_data_catalog.sales_data TO
+FinanceTeam;
+GRANT SELECT, INSERT, UPDATE ON SCHEMA
+corporate_data_catalog.finance_data TO FinanceTeam;
+##Grant access to HRTeam
+GRANT SELECT, UPDATE ON SCHEMA corporate_data_catalog.hr_data TO
+HRTeam;
+
+2. Implement Column-Level Security:
+CREATE VIEW corporate_data_catalog.hr_data.salary_restricted AS
+SELECT EmployeeID, EmployeeName, Department FROM
+corporate_data_catalog.hr_data.employees;
+
+GRANT SELECT ON VIEW corporate_data_catalog.hr_data.salary_restricted TO
+HRTeam;
+
+3. Row-Level Security:
+CREATE VIEW corporate_data_catalog.sales_data.sales_rep_view AS
+SELECT * FROM corporate_data_catalog.sales_data.sales WHERE SalesRepID =
+current_user();
+GRANT SELECT ON VIEW corporate_data_catalog.sales_data.sales_rep_view TO
+specific_sales_rep;
+
+Task 5: Data Governance Best Practices
+
+1. Define Data Quality Rules:
+
+##Ensure sales amounts are positive
+
+SELECT * FROM corporate_data_catalog.sales_data.sales WHERE SalesAmount <0;
+ ## Ensure employee salaries are greater than zero
+SELECT * FROM corporate_data_catalog.hr_data.employees WHERE Salary <= 0;
+##Ensure invoice amounts match payment records
+
+SELECT * FROM corporate_data_catalog.finance_data.invoices WHERE
+InvoiceAmount <= 0;
+
+2. Apply Time Travel for Data Auditing:
+
+SELECT * FROM corporate_data_catalog.finance_data.invoices VERSION AS OF
+TIMESTAMP '2024-09-15';
+
+Task 6: Optimize and Clean Up Delta Tables OPTIMIZE
+
+corporate_data_catalog.sales_data.sales; OPTIMIZE
+corporate_data_catalog.finance_data.invoices;
+
+## vaccum
+VACUUM corporate_data_catalog.sales_data.sales; VACUUM
+corporate_data_catalog.finance_data.invoices;
+
