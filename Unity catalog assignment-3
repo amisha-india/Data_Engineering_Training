@@ -1,0 +1,100 @@
+Mini Project: Building a Secure Data Platform with Unity Catalog:
+
+
+Task 1: Set Up Unity Catalog for Multi-Domain Data Management
+
+1. Create a New Catalog:
+CREATE CATALOG enterprise_data_catalog;
+
+2. Create Domain-Specific Schemas:
+CREATE SCHEMA enterprise_data_catalog.marketing_data; CREATE SCHEMA
+enterprise_data_catalog.operations_data; CREATE SCHEMA
+enterprise_data_catalog.it_data;
+
+3. Create Tables in Each Schema:
+CREATE TABLE enterprise_data_catalog.marketing_data.campaigns ( CampaignID
+INT,
+
+CampaignName STRING, Budget DOUBLE, StartDate DATE
+);
+
+CREATE TABLE enterprise_data_catalog.operations_data.orders ( OrderID INT,
+ProductID INT, Quantity INT, ShippingStatus STRING
+);
+
+CREATE TABLE enterprise_data_catalog.it_data.incidents ( IncidentID INT,
+ReportedBy STRING, IssueType STRING, ResolutionTime DOUBLE
+);
+
+Task 2: Data Discovery and Classification
+
+1. Search for Data Across Schemas:
+SHOW TABLES IN enterprise_data_catalog;
+
+SELECT * FROM enterprise_data_catalog.INFORMATION_SCHEMA.COLUMNS
+WHERE column_name = 'Budget';
+
+2. Tag Sensitive Information:
+ALTER TABLE enterprise_data_catalog.marketing_data.campaigns SET TAGS
+('Budget' = 'Sensitive');
+
+ALTER TABLE enterprise_data_catalog.it_data.incidents SET TAGS
+('ResolutionTime' = 'Sensitive');
+
+3. Data Profiling:
+SELECT AVG(Budget) FROM enterprise_data_catalog.marketing_data.campaigns;
+
+Task 3: Data Lineage and Auditing
+
+1. Track Data Lineage Across Schemas:
+
+SELECT m.CampaignID, m.CampaignName, o.OrderID, o.ProductID, o.Quantity
+FROM enterprise_data_catalog.marketing_data.campaigns m
+JOIN enterprise_data_catalog.operations_data.orders o ON m.CampaignID =
+o.ProductID;
+
+2. Enable and Analyze Audit Logs:
+SHOW AUDIT LOGS FOR enterprise_data_catalog.it_data;
+
+Task 4: Implement Fine-Grained Access Control
+
+1. Create User Roles and Groups:
+GRANT USAGE ON SCHEMA enterprise_data_catalog.marketing_data TO GROUP
+MarketingTeam;
+GRANT USAGE ON SCHEMA enterprise_data_catalog.operations_data TO
+GROUP OperationsTeam;
+GRANT USAGE ON SCHEMA enterprise_data_catalog.it_data TO GROUP
+ITSupportTeam;
+
+2. Implement Column-Level Security:
+GRANT SELECT (CampaignID, CampaignName, StartDate) ON TABLE
+enterprise_data_catalog.marketing_data.campaigns
+TO GROUP OperationsTeam;
+GRANT SELECT ON TABLE enterprise_data_catalog.marketing_data.campaigns
+TO GROUP MarketingTeam;
+
+3. Row-Level Security:
+CREATE ROW ACCESS POLICY operations_team_policy ON
+enterprise_data_catalog.operations_data.orders
+USING (User() = 'operations_rep');
+
+Task 5: Data Governance and Quality Enforcement
+
+1. Set Data Quality Rules:
+SELECT * FROM enterprise_data_catalog.marketing_data.campaigns WHERE
+Budget <= 0;
+
+2. Apply Delta Lake Time Travel:
+DESCRIBE HISTORY enterprise_data_catalog.operations_data.orders; RESTORE
+enterprise_data_catalog.operations_data.orders
+TO VERSION AS OF <version-number>;
+
+Task 6: Performance Optimization and Data Cleanup
+
+1. Optimize Delta Tables:
+OPTIMIZE enterprise_data_catalog.operations_data.orders; OPTIMIZE
+enterprise_data_catalog.it_data.incidents;
+2. Vacuum Delta Tables:
+VACUUM enterprise_data_catalog.operations_data.orders; VACUUM
+enterprise_data_catalog.it_data.incidents;
+
